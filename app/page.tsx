@@ -133,6 +133,7 @@ export default function Home() {
 	const [currentStreamingId, setCurrentStreamingId] = useState<string | null>(
 		null
 	);
+	const [cardsData, setCardsData] = useState<CardsData | null>(null);
 	const abortControllerRef = useRef<AbortController | null>(null);
 	const router = useRouter();
 	const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -413,12 +414,14 @@ export default function Home() {
 											))}
 										</div>
 										<div className="flex gap-3 pt-2">
-											<button
-												onClick={() => router.push("/cards")}
+											{/* <button
+												onClick={() => router.push("/cards", {
+														cards:
+												})}
 												className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors text-sm"
 											>
 												View All Cards
-											</button>
+											</button>  */}
 										</div>
 									</div>
 								)}

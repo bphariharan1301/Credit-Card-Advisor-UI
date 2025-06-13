@@ -1,36 +1,134 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 💳 Credit Card Advisor – Application Summary
 
-## Getting Started
+An AI-powered web application that helps users find the best credit cards based on their preferences and spending habits. Built with **React**, **Next.js**, **TypeScript**, and a **streaming backend**, the app supports real-time LLM-based recommendations and interactive markdown-based responses.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## 🚀 Features
+
+- ✅ Natural language query support for credit card recommendations
+- ✅ Real-time streaming responses using Server-Sent Events (SSE)
+- ✅ Markdown rendering with support for code, lists, and rich text
+- ✅ Card recommendation cards with reward rates, fees, and features
+- ✅ Cancel streaming in-progress queries
+- ✅ Responsive chat-like UI
+
+---
+
+## 🧠 How It Works
+
+1. **User asks a question** (e.g., "Best travel credit card with no annual fee?")
+2. **App sends a request** to the backend using `fetch()`, with the query.
+3. **Streaming backend** responds with chunks of JSON (SSE).
+4. The client parses the stream and updates assistant's message in real time.
+5. If card data is included in the stream, it’s rendered as styled card recommendations.
+6. All messages are rendered using `ReactMarkdown` for rich formatting.
+
+---
+
+## 🗂️ Code Structure
+
+### `Home` Component (`page.tsx`)
+
+- Manages all app state:
+  - `messages` – conversation history
+  - `isStreaming`, `abortControllerRef`, etc.
+- Handles:
+  - Submitting queries
+  - Receiving streaming responses
+  - Rendering messages and UI
+
+### `MarkdownRenderer`
+
+- Custom component using `react-markdown` and `remark-gfm`
+- Custom styles for:
+  - Headings, lists, links, code blocks, etc.
+
+### `Message` Interface
+
+```ts
+interface Message {
+	id: string;
+	role: "user" | "assistant";
+	content: string;
+	cardsData?: CardsData;
+	timestamp: Date;
+	isStreaming?: boolean;
+}
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### `CardsData` Interface
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- Contains:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+  - `matches` – credit cards
+  - `criteria` – why it was chosen
+  - `explanation` – reasoning
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## 🔧 Tech Stack
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Tech          | Purpose                  |
+| ------------- | ------------------------ |
+| React + Next  | Frontend UI & routing    |
+| TypeScript    | Type safety              |
+| TailwindCSS   | Styling                  |
+| ReactMarkdown | Markdown rendering       |
+| Lucide Icons  | Icons for user/bot/cards |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## 📌 Backend Integration
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- Accepts POST request at `/api/query`
+- Responds with Server-Sent Events (SSE) like:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```json
+data: {"type": "message", "content": "Here are some options..."}
+data: {"type": "cards", "content": { matches: [...], ... }}
+data: [DONE]
+```
+
+---
+
+## 📎 Example Query
+
+> _"I want a cashback card with zero annual fees and great fuel benefits"_
+
+- Returns streaming message
+- Then 3-5 recommended credit cards
+- Each card includes:
+
+  - Name, bank, reward rate, annual fee
+  - Summary and highlighted features
+
+---
+
+## 📱 UI Overview
+
+- Header with app title and icon
+- Scrollable message window
+- Each message has:
+
+  - Avatar
+  - Timestamp
+  - Markdown content
+
+- Input box with:
+
+  - Shift+Enter = newline
+  - Enter = send
+  - Cancel streaming with "Stop" button
+
+---
+
+## 🧩 What You Can Build Next
+
+- 🧠 Integrate OpenAI/GPT backend
+- 🛒 Save favorite cards
+- 📊 Add comparison view
+- 👤 Login and user history
+- 📈 Analytics and filters
+
+---

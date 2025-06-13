@@ -174,7 +174,7 @@ export default function Home() {
 
 		try {
 			const res = await fetch(
-				`${process.env.NEXT_APP_NODE_BACKEND_URL}/api/query`,
+				`${process.env.NEXT_PUBLIC_NODE_BACKEND_URL}/api/query`,
 				{
 					method: "POST",
 					headers: { "Content-Type": "application/json" },

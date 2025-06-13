@@ -1,48 +1,40 @@
 "use client";
-
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Send, Bot, User, CreditCard, Gift, DollarSign } from "lucide-react";
+import { CreditCard, User, Bot, DollarSign, Gift, Send } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import type { Components } from "react-markdown";
+// Types
+interface Message {
+	id: string;
+	role: "user" | "assistant";
+	content: string;
+	timestamp: Date;
+	isStreaming?: boolean;
+	cardsData?: CardsData;
+}
 
-interface CreditCard {
-	card_name: string;
-	bank: string;
-	features: string[];
-	annual_fee: string;
-	annual_fee_display: string;
-	welcome_offer: string;
-	joining_fee: string;
-	reward_rate: string;
-	card_type: string;
-	summary: string;
-	relevantFeatures: string[];
+interface CardsData {
+	matches: Array<{
+		card_name: string;
+		bank: string;
+		reward_rate: string;
+		annual_fee_display: string;
+		summary: string;
+		relevantFeatures: string[];
+		welcome_offer?: string;
+		// Add other card properties as needed
+		annual_fee: number;
+		card_type: string;
+		features: string[];
+	}>;
 }
 
 interface StreamResponse {
 	type: "status" | "message" | "cards" | "error";
 	content: any;
 }
-
-interface CardsData {
-	criteria: any;
-	matches: CreditCard[];
-	explanation: string;
-	totalResults: number;
-	query: string;
-}
-
-interface Message {
-	id: string;
-	role: "user" | "assistant";
-	content: string;
-	cardsData?: CardsData;
-	timestamp: Date;
-	isStreaming?: boolean;
-}
-
 const MarkdownRenderer = ({ content }: { content: string }) => {
 	const components: Components = {
 		h1: ({ ...props }) => (
@@ -139,6 +131,33 @@ export default function Home() {
 	const messagesEndRef = useRef<HTMLDivElement>(null);
 	const inputRef = useRef<HTMLTextAreaElement>(null);
 
+	// Save and restore chat state
+	useEffect(() => {
+		// Load saved messages from localStorage when component mounts
+		const savedMessages = localStorage.getItem("chat-messages");
+		if (savedMessages) {
+			try {
+				const parsedMessages = JSON.parse(savedMessages);
+				// Convert timestamp strings back to Date objects
+				const messagesWithDates = parsedMessages.map((msg: any) => ({
+					...msg,
+					timestamp: new Date(msg.timestamp),
+				}));
+				setMessages(messagesWithDates);
+			} catch (error) {
+				console.error("Error loading saved messages:", error);
+			}
+		}
+	}, []);
+
+	// Save messages to localStorage whenever messages change
+	useEffect(() => {
+		if (messages.length > 1) {
+			// Don't save just the initial message
+			localStorage.setItem("chat-messages", JSON.stringify(messages));
+		}
+	}, [messages]);
+
 	const scrollToBottom = () => {
 		messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
 	};
@@ -146,6 +165,25 @@ export default function Home() {
 	useEffect(() => {
 		scrollToBottom();
 	}, [messages]);
+
+	const handleViewCards = (cardsData: CardsData) => {
+		// Save cards data to localStorage for the cards page to access
+		localStorage.setItem("current-cards-data", JSON.stringify(cardsData));
+		router.push("/cards");
+	};
+
+	const clearChatHistory = () => {
+		localStorage.removeItem("chat-messages");
+		setMessages([
+			{
+				id: "1",
+				role: "assistant",
+				content:
+					"Hi! I'm your Credit Card Advisor. I can help you find the perfect credit card based on your needs, spending habits, and preferences. What kind of credit card are you looking for?",
+				timestamp: new Date(),
+			},
+		]);
+	};
 
 	const handleSubmit = async (e?: React.FormEvent) => {
 		if (e) e.preventDefault();
@@ -299,18 +337,26 @@ export default function Home() {
 		<div className="flex flex-col h-screen bg-gray-50">
 			{/* Header */}
 			<div className="bg-white border-b border-gray-200 px-6 py-4">
-				<div className="flex items-center gap-3">
-					<div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-						<CreditCard className="w-4 h-4 text-white" />
+				<div className="flex items-center justify-between">
+					<div className="flex items-center gap-3">
+						<div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+							<CreditCard className="w-4 h-4 text-white" />
+						</div>
+						<div>
+							<h1 className="text-lg font-semibold text-gray-900">
+								Credit Card Advisor
+							</h1>
+							<p className="text-sm text-gray-500">
+								AI-powered credit card recommendations
+							</p>
+						</div>
 					</div>
-					<div>
-						<h1 className="text-lg font-semibold text-gray-900">
-							Credit Card Advisor
-						</h1>
-						<p className="text-sm text-gray-500">
-							AI-powered credit card recommendations
-						</p>
-					</div>
+					<button
+						onClick={clearChatHistory}
+						className="text-sm text-gray-500 hover:text-gray-700 px-3 py-1 rounded-md hover:bg-gray-100 transition-colors"
+					>
+						Clear Chat
+					</button>
 				</div>
 			</div>
 
@@ -414,14 +460,12 @@ export default function Home() {
 											))}
 										</div>
 										<div className="flex gap-3 pt-2">
-											{/* <button
-												onClick={() => router.push("/cards", {
-														cards:
-												})}
+											<button
+												onClick={() => handleViewCards(message.cardsData!)}
 												className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors text-sm"
 											>
 												View All Cards
-											</button>  */}
+											</button>
 										</div>
 									</div>
 								)}

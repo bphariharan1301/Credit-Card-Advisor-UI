@@ -173,12 +173,15 @@ export default function Home() {
 		abortControllerRef.current = new AbortController();
 
 		try {
-			const res = await fetch(`${process.env.NODE_BACKEND_URL}/api/query`, {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ query: userMessage.content }),
-				signal: abortControllerRef.current.signal,
-			});
+			const res = await fetch(
+				`${process.env.NEXT_APP_NODE_BACKEND_URL}/api/query`,
+				{
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ query: userMessage.content }),
+					signal: abortControllerRef.current.signal,
+				}
+			);
 
 			if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
 			if (!res.body) throw new Error("No response body");

@@ -173,7 +173,7 @@ export default function Home() {
 		abortControllerRef.current = new AbortController();
 
 		try {
-			const res = await fetch("http://localhost:3001/api/query", {
+			const res = await fetch(`${process.env.NODE_BACKEND_URL}/api/query`, {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({ query: userMessage.content }),
